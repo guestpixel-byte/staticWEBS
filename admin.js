@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function commitToGitHub(updatedContent) {
     // GitHub API: Update file content
     const token = "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"; // User must provide a GitHub token
-    const repo = "guestpixel-byte.github.io/staticWEBS";
-    const filePath = "guestpixel-byte.github.io/staticWEBS/index.html";
+    const repo = "guestpixel-byte/staticWEBS";
+    const filePath = "guestpixel-byte/staticWEBS/index.html";
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
     fetch(apiUrl, {
