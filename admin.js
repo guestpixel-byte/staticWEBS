@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editBtn.classList.add("hidden");
         saveBtn.classList.remove("hidden");
         content.classList.add("edit-mode");
+        console.log("Entered edit mode");
     });
 
     saveBtn.addEventListener("click", () => {
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Collect content and prepare for GitHub commit
         const updatedContent = content.innerHTML;
+        console.log("Collected updated content:", updatedContent);
         commitToGitHub(updatedContent);
     });
 });
@@ -27,8 +29,9 @@ function commitToGitHub(updatedContent) {
     const token = "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"; // User must provide a GitHub token
     const repo = "guestpixel-byte/staticWEBS";
     const filePath = "/guestpixel-byte/staticWEBS/index.html";
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
-    fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+    fetch(apiUrl, {
         method: 'GET',
         headers: {
             'Authorization': `token ${token}`,
@@ -37,8 +40,10 @@ function commitToGitHub(updatedContent) {
     })
     .then(response => response.json())
     .then(fileData => {
-        const base64Content = btoa(updatedContent);
-        return fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+        const base64Content = btoa(unescape(encodeURIComponent(updatedContent))); // Encode content to base64
+        console.log("Retrieved file data:", fileData);
+
+        return fetch(apiUrl, {
             method: 'PUT',
             headers: {
                 'Authorization': `token ${token}`,
@@ -52,6 +57,12 @@ function commitToGitHub(updatedContent) {
         });
     })
     .then(response => response.json())
-    .then(data => console.log('Commit successful:', data))
+    .then(data => {
+        if (data.commit) {
+            console.log('Commit successful:', data);
+        } else {
+            console.error('Commit failed:', data);
+        }
+    })
     .catch(error => console.error('Error:', error));
 }
