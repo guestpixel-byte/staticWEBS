@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function commitToGitHub(updatedContent) {
     const token = "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"; // Replace with a secure token storage method
-    const repo = "guestpixel-byte.github.io/staticWEBS";
+    const repo = "guestpixel-byte/staticWEBS";
     const filePath = "index.html";
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
