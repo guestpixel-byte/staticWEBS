@@ -1,3 +1,6 @@
+// Include Octokit.js using a CDN or install it in your project
+const { Octokit } = require("@octokit/core");
+
 document.addEventListener("DOMContentLoaded", () => {
     const editBtn = document.getElementById("edit-btn");
     const saveBtn = document.getElementById("save-btn");
@@ -24,44 +27,48 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function commitToGitHub(updatedContent) {
+async function commitToGitHub(updatedContent) {
     const token = "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"; // Replace with a secure token storage method
-    const repo = "guestpixel-byte/staticWEBS";
-    const filePath = "index.html";
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+    const repoOwner = "guestpixel-byte"; // Replace with the repository owner's username
+    const repoName = "staticWEBS"; // Replace with the repository name
+    const filePath = "index.html"; // Path relative to the repository
+    const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`;
 
-    fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-            'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3+json'
-        }
-    })
-    .then(response => response.json())
-    .then(fileData => {
+    const octokit = new Octokit({
+        auth: token
+    });
+
+    try {
+        const fileData = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+            owner: repoOwner,
+            repo: repoName,
+            path: filePath,
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        });
+
         const base64Content = btoa(unescape(encodeURIComponent(updatedContent))); // Encode content to base64
         console.log("Retrieved file data:", fileData);
 
-        return fetch(apiUrl, {
-            method: 'PUT',
+        const response = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+            owner: repoOwner,
+            repo: repoName,
+            path: filePath,
+            message: "Updated content",
+            content: base64Content,
+            sha: fileData.data.sha,
             headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify({
-                message: "Updated content",
-                content: base64Content,
-                sha: fileData.sha
-            })
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
         });
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.commit) {
-            console.log('Commit successful:', data);
+
+        if (response.data.commit) {
+            console.log('Commit successful:', response);
         } else {
-            console.error('Commit failed:', data);
+            console.error('Commit failed:', response);
         }
-    })
-    .catch(error => console.error('Error:', error));
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
